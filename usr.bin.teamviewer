@@ -1,0 +1,238 @@
+#include <tunables/global>
+
+/usr/bin/teamviewer {
+}
+
+/opt/teamviewer/tv_bin/TVGuiDelegate {
+}
+
+/opt/teamviewer/tv_bin/TVGuiSlave.32 {
+}
+
+/opt/teamviewer/tv_bin/TVGuiSlave.64 {
+}
+
+/opt/teamviewer/tv_bin/script/teamviewer {
+	#include <abstractions/base>
+	#include <abstractions/nameservice>
+	#include <abstractions/X>
+	#include <abstractions/dbus>
+	#include <abstractions/dbus-session>
+	#include <abstractions/user-tmp>
+	#include <abstractions/fonts>
+	#include <abstractions/audio>
+	#include <abstractions/ssl_certs>
+	#include <abstractions/consoles>
+
+	capability sys_ptrace,
+	capability dac_override,
+
+	/opt/teamviewer/ r,
+	/opt/teamviewer/*/* r,
+	/opt/teamviewer/tv_bin/RTlib/** mr,
+	/opt/teamviewer/tv_bin/resources/** mr,
+
+	/opt/teamviewer/tv_bin/script/** rix,
+	/opt/teamviewer/tv_bin/TeamViewer rix,
+	/opt/teamviewer/tv_bin/teamviewerd rpx,
+	/opt/teamviewer/tv_bin/TVGuiDelegate rix,
+	/opt/teamviewer/tv_bin/TVGuiSlave.32 rix,
+	/opt/teamviewer/tv_bin/TVGuiSlave.64 rix,
+
+	/{var/,}run/teamviewerd.pid krw,
+	/run/teamviewerd.ipc krw,
+	
+	/etc/teamviewer/ r,
+	/etc/teamviewer/** krw,
+	/var/log/teamviewer*/ r,
+	/var/log/teamviewer*/* krw,
+
+	/usr/bin/ps rix,
+	/usr/bin/env rix,
+	/usr/bin/uname rix,
+	/usr/bin/readlink rix,
+	/usr/bin/dirname rix,
+	/usr/bin/chmod rix,
+	/usr/bin/egrep rix,
+	/usr/bin/grep rix,
+	/usr/bin/flock rix,
+	/usr/bin/tee rix,
+	/usr/bin/cat rix,
+	/usr/bin/xprop rix,
+	/usr/bin/cut rix,
+	/usr/bin/id rix,
+	/usr/bin/mkdir rix,
+	/usr/bin/ln rix,
+	/usr/bin/wc rix,
+	/usr/bin/touch rix,
+	/usr/bin/sleep rix,
+	/usr/bin/xdg-open rix,
+	/usr/bin/bzip2 rix,
+	/usr/bin/gzip rix,
+	/usr/bin/dash rix,
+	/usr/local/ r,
+	/bin/bash rix,
+	/bin/ps rix,
+
+        /opt/teamviewer/config/global.conf r,
+        /opt/teamviewer/config/global.conf.* r,
+	/opt/teamviewer/tv_bin/RTlib/qt/libexec/* rix,
+
+
+	/etc/issue r,
+	/usr/share/terminfo/x/xterm r,
+	/usr/share/drirc.d/ rix,
+	/usr/share/drirc.d/* rix,
+	/usr/share/fonts-config/conf.avail/* r,
+	
+	@{HOME}/.local/share/teamviewer** krw,
+	@{HOME}/.config/teamviewer** krw,
+	@{HOME}/.config/Trolltech.conf rk,
+	@{HOME}/.config/user-dirs.dirs r,
+	@{HOME}/.cache/fontconfig/ r,
+	@{HOME}/.cache/fontconfig/* rwk, 
+	@{HOME}/.cache/mesa_shader_cache/* rwk,
+	@{HOME}/.cache/mesa_shader_cache/*/ rwk,
+	@{HOME}/.cache/mesa_shader_cache/*/* rwk,
+	@{HOME}/.cache/qtshadercache*/* rwk,
+	@{HOME}/.cache/TeamViewer/ rwk,
+	@{HOME}/.cache/TeamViewer/** rwk,
+	@{HOME}/.icons/default/index.theme rix,
+	@{HOME}/.cache/** r,
+	@{HOME}/.glvndiAFpOk rwk,
+	
+
+	/dev/fb0 r,
+	/tmp/.X11-unix/ r,
+	/tmp/.X11-unix/** r,
+    
+	@{PROC}/sys/kernel/{ostype,osrelease} r,
+	@{PROC}/sys/kernel/pid_max r,
+	@{PROC}/sys/dev/** r,
+	@{PROC}/scsi/scsi r,
+	@{PROC}/uptime r,
+	@{PROC}/@{pid}/** r,
+	@{PROC}/ r,
+	
+	/etc/passwd m,
+	/{dev,run}/shm/pulse-shm* mr,
+	/etc/pulse/client.conf.d/ r,
+	
+	
+	/usr/share/icons/** r,
+	/usr/share/locale/*/LC_MESSAGES/libc.mo mr,
+	
+	/usr/share/ghostscript/fonts/ r,
+	/usr/share/stix-fonts/conf.avail/* r,
+	/usr/share/cantarell-fonts/conf.avail/* r,
+	/usr/share/hwdata/* r,
+
+	/run/user/** rwk,
+	/run/issue r,
+
+	/sys/devices/system/cpu/cpufreq/policy[0-9]/{cpuinfo_max,scaling_max,scaling_cur}_freq r,
+	/sys/devices/**/net/*/uevent r,
+	/sys/devices/pci*/** r,
+	/sys/devices/virtual/tty/tty*/active r,
+	/sys/bus/pci/devices/ r,
+	ptrace (read) peer=unconfined,
+	ptrace (trace) peer=unconfined,
+	ptrace (trace) peer=TVGuiSlave.64,
+	ptrace (read) peer="/opt/teamviewer/tv_bin/script/teamviewer",
+	ptrace (trace) peer="/opt/teamviewer/tv_bin/script/teamviewer",
+	ptrace (trace) peer=ps,
+}
+
+/opt/teamviewer/tv_bin/teamviewerd {
+	#include <abstractions/base>
+	#include <abstractions/nameservice>
+	#include <abstractions/X>
+	#include <abstractions/consoles>
+
+        dbus (send)
+                bus=system
+		interface="org.freedesktop.DBus",
+	dbus (send)
+		path="/org/freedesktop/login1"
+		bus=system
+		interface="org.freedesktop.login1.Manager",
+	dbus (send)
+		bus=system
+		interface="org.freedesktop.DBus.Properties",
+	
+	dbus bind name="com.teamviewer.TeamViewer.Daemon",
+
+	capability sys_ptrace,
+	capability dac_override,
+	capability dac_read_search,
+	capability sys_tty_config,
+	capability kill,
+	capability setuid,
+
+	/var/run/teamviewerd.pid krw,
+	/run/teamviewerd.pid krw,
+	/run/teamviewerd.ipc krw,
+	
+	/etc/teamviewer/** krw,
+	/var/log/teamviewer*/ r,
+	/var/log/teamviewer*/* krw,
+        /opt/teamviewer/logfiles/ r,
+	/opt/teamviewer/logfiles/* krw,
+	/opt/teamviewer/config/global.conf krw,
+	/opt/teamviewer/config/global.conf.* krw,
+	/opt/teamviewer/config/* krw,
+	/opt/teamviewer/rolloutfile.tv13 krw,
+	/run/dbus/system_bus_socket wr,
+	
+	/usr/bin/dash rix,
+	/usr/bin/bash rix,
+	/usr/bin/su rix,
+	/usr/bin/getconf rix,
+	/usr/bin/readlink r,
+	/usr/lib/getconf/getconf rix,
+
+	/opt/teamviewer/ r,
+	/opt/teamviewer/tv_bin/teamviewerd mr,
+
+	@{HOME}/.local/share/teamviewer** krw,
+	@{HOME}/.config/teamviewer** krw,
+	/root/.local/ krw,
+	/root/.local/share/ krw,
+
+	/dev/fb0 rw,
+	/dev/tty* rw,
+	/tmp/.X11-unix/ r,
+	
+	@{PROC}/ r,
+	@{PROC}/@{pid}/** r,
+	@{PROC}/tty/drivers r,
+
+	/etc/passwd m,
+	/etc/fstab r,
+	/etc/machine-id r,
+	/etc/issue r,
+	/etc/os-release r,
+
+	/run/user/** rix,
+	/run/issue r,
+
+	/sys/devices/system/cpu/cpufreq/policy[0-9]/{cpuinfo_max,scaling_max,scaling_cur}_freq r,
+	/sys/devices/system/cpu/ r,
+	/sys/devices/pci*/*/uevent r,
+	/sys/devices/**/net/*/uevent r,
+	/sys/devices/virtual/tty/tty*/active r,
+	/sys/class/power_supply/ r,
+
+	ptrace (read) peer=unconfined,
+	ptrace (trace) peer=unconfined,
+	ptrace (read) peer="/usr/sbin/cups-browsed",
+	ptrace (trace) peer="/usr/sbin/cupsd",
+	ptrace (read) peer="/usr/sbin/haveged",
+	ptrace (trace) peer=teamviewerd,
+	ptrace (read) peer=teamviewerd,
+	ptrace (read) peer=nscd,
+	ptrace (read) peer=avahi-daemon,
+	ptrace (read) peer="/usr/lib/colord",
+	ptrace (trace) peer="/sbin/dhclient",
+	ptrace (trace) peer="/opt/teamviewer/tv_bin/script/teamviewer",
+}
