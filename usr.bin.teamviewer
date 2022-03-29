@@ -1,3 +1,6 @@
+# vim:syntax=apparmor
+# Author: Daniel Sung <tcsung_daniel@hotmail.com>
+
 #include <tunables/global>
 
 /usr/bin/teamviewer {
